@@ -10,13 +10,10 @@ def find_primes_under_n(n: int) -> list[int]:
         n (int): 上限値（この値未満の素数を求める）
     
     Returns:
-        list[int]: n未満の素数のリスト
-    
-    Raises:
-        ValueError: nが2未満の場合
+        list[int]: n未満の素数のリスト（n < 2の場合は空のリスト）
     """
     if n < 2:
-        raise ValueError("nは2以上の整数である必要があります")
+        return []
     
     # 篩の初期化
     sieve = [True] * n
