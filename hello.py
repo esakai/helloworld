@@ -1,30 +1,28 @@
 #!/usr/bin/env python3
 
-def is_prime(n: int) -> bool:
-    """
-    素数判定を行う関数
-    
-    Args:
-        n (int): 判定する数値
-    
-    Returns:
-        bool: 素数の場合True、それ以外の場合False
-    """
-    if n < 2:
-        return False
-    for i in range(2, int(n ** 0.5) + 1):
-        if n % i == 0:
-            return False
-    return True
+# 注: エラトステネスの篩の実装により、個別の素数判定関数は不要になりました
 
 def find_primes_under_100() -> list[int]:
     """
-    100未満の素数を全て求める関数
+    エラトステネスの篩を使用して100未満の素数を全て求める関数
     
     Returns:
         list[int]: 100未満の素数のリスト
     """
-    return [n for n in range(2, 100) if is_prime(n)]
+    # 篩の初期化
+    limit = 100
+    sieve = [True] * limit
+    sieve[0] = sieve[1] = False  # 0と1は素数ではない
+    
+    # エラトステネスの篩による素数判定
+    for i in range(2, int(limit ** 0.5) + 1):
+        if sieve[i]:
+            # iが素数なら、その倍数を全て除外
+            for j in range(i * i, limit, i):
+                sieve[j] = False
+    
+    # 素数のリストを生成
+    return [i for i in range(limit) if sieve[i]]
 
 def main():
     """
