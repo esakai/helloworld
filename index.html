@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Othello Board</title>
+    <title>Othello Game</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         table {
             border-collapse: collapse;
-            margin: 0 auto;
+            margin: 20px auto;
             background: #008000;
         }
         td {
@@ -16,6 +22,19 @@
             border: 1px solid #000;
             text-align: center;
             vertical-align: middle;
+            cursor: pointer;
+            position: relative;
+        }
+        td.valid-move::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.2);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         .white-piece {
             width: 50px;
@@ -24,6 +43,7 @@
             background: #fff;
             margin: auto;
             display: block;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
         .black-piece {
             width: 50px;
@@ -32,26 +52,288 @@
             background: #000;
             margin: auto;
             display: block;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
         h1 {
             text-align: center;
             color: #333;
+            margin: 20px 0;
+        }
+        #game-info {
+            margin: 20px 0;
+            font-size: 1.2em;
+            text-align: center;
+        }
+        #start-button {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        #start-button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
     <h1>オセロ</h1>
-    <table>
+    <button id="start-button">ゲームを開始</button>
+    <div id="game-info">ゲームを開始してください</div>
+    <table id="game-board">
         <tbody>
-            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td><span class="white-piece"></span></td><td><span class="black-piece"></span></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td><span class="black-piece"></span></td><td><span class="white-piece"></span></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td data-x="0" data-y="0"></td><td data-x="1" data-y="0"></td><td data-x="2" data-y="0"></td><td data-x="3" data-y="0"></td><td data-x="4" data-y="0"></td><td data-x="5" data-y="0"></td><td data-x="6" data-y="0"></td><td data-x="7" data-y="0"></td></tr>
+            <tr><td data-x="0" data-y="1"></td><td data-x="1" data-y="1"></td><td data-x="2" data-y="1"></td><td data-x="3" data-y="1"></td><td data-x="4" data-y="1"></td><td data-x="5" data-y="1"></td><td data-x="6" data-y="1"></td><td data-x="7" data-y="1"></td></tr>
+            <tr><td data-x="0" data-y="2"></td><td data-x="1" data-y="2"></td><td data-x="2" data-y="2"></td><td data-x="3" data-y="2"></td><td data-x="4" data-y="2"></td><td data-x="5" data-y="2"></td><td data-x="6" data-y="2"></td><td data-x="7" data-y="2"></td></tr>
+            <tr><td data-x="0" data-y="3"></td><td data-x="1" data-y="3"></td><td data-x="2" data-y="3"></td><td data-x="3" data-y="3"></td><td data-x="4" data-y="3"></td><td data-x="5" data-y="3"></td><td data-x="6" data-y="3"></td><td data-x="7" data-y="3"></td></tr>
+            <tr><td data-x="0" data-y="4"></td><td data-x="1" data-y="4"></td><td data-x="2" data-y="4"></td><td data-x="3" data-y="4"></td><td data-x="4" data-y="4"></td><td data-x="5" data-y="4"></td><td data-x="6" data-y="4"></td><td data-x="7" data-y="4"></td></tr>
+            <tr><td data-x="0" data-y="5"></td><td data-x="1" data-y="5"></td><td data-x="2" data-y="5"></td><td data-x="3" data-y="5"></td><td data-x="4" data-y="5"></td><td data-x="5" data-y="5"></td><td data-x="6" data-y="5"></td><td data-x="7" data-y="5"></td></tr>
+            <tr><td data-x="0" data-y="6"></td><td data-x="1" data-y="6"></td><td data-x="2" data-y="6"></td><td data-x="3" data-y="6"></td><td data-x="4" data-y="6"></td><td data-x="5" data-y="6"></td><td data-x="6" data-y="6"></td><td data-x="7" data-y="6"></td></tr>
+            <tr><td data-x="0" data-y="7"></td><td data-x="1" data-y="7"></td><td data-x="2" data-y="7"></td><td data-x="3" data-y="7"></td><td data-x="4" data-y="7"></td><td data-x="5" data-y="7"></td><td data-x="6" data-y="7"></td><td data-x="7" data-y="7"></td></tr>
         </tbody>
     </table>
+    <script>
+        class OthelloGame {
+            constructor() {
+                this.board = Array(8).fill().map(() => Array(8).fill(null));
+                this.currentPlayer = 'black'; // User always starts
+                this.isGameStarted = false;
+                this.directions = [
+                    [-1, -1], [-1, 0], [-1, 1],
+                    [0, -1],           [0, 1],
+                    [1, -1],  [1, 0],  [1, 1]
+                ];
+            }
+
+            initializeBoard() {
+                // Clear the board
+                this.board = Array(8).fill().map(() => Array(8).fill(null));
+                // Set initial pieces
+                this.board[3][3] = 'white';
+                this.board[3][4] = 'black';
+                this.board[4][3] = 'black';
+                this.board[4][4] = 'white';
+                this.currentPlayer = 'black';
+                this.isGameStarted = true;
+                this.updateBoard();
+                this.showValidMoves();
+            }
+
+            isValidMove(x, y) {
+                if (this.board[y][x] !== null) return false;
+                
+                return this.directions.some(([dx, dy]) => {
+                    let newX = x + dx;
+                    let newY = y + dy;
+                    let hasOpponentPiece = false;
+                    
+                    while (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+                        if (this.board[newY][newX] === null) return false;
+                        if (this.board[newY][newX] === this.currentPlayer) {
+                            return hasOpponentPiece;
+                        }
+                        hasOpponentPiece = true;
+                        newX += dx;
+                        newY += dy;
+                    }
+                    return false;
+                });
+            }
+
+            getValidMoves() {
+                const validMoves = [];
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        if (this.isValidMove(x, y)) {
+                            validMoves.push([x, y]);
+                        }
+                    }
+                }
+                return validMoves;
+            }
+
+            showValidMoves() {
+                // Clear previous valid moves
+                document.querySelectorAll('td').forEach(cell => {
+                    cell.classList.remove('valid-move');
+                });
+
+                // Show new valid moves
+                if (this.currentPlayer === 'black') {
+                    const validMoves = this.getValidMoves();
+                    validMoves.forEach(([x, y]) => {
+                        const cell = document.querySelector(`td[data-x="${x}"][data-y="${y}"]`);
+                        cell.classList.add('valid-move');
+                    });
+                }
+            }
+
+            flipPieces(x, y) {
+                this.directions.forEach(([dx, dy]) => {
+                    let newX = x + dx;
+                    let newY = y + dy;
+                    let piecesToFlip = [];
+                    
+                    while (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+                        if (this.board[newY][newX] === null) break;
+                        if (this.board[newY][newX] === this.currentPlayer) {
+                            piecesToFlip.forEach(([fx, fy]) => {
+                                this.board[fy][fx] = this.currentPlayer;
+                            });
+                            break;
+                        }
+                        piecesToFlip.push([newX, newY]);
+                        newX += dx;
+                        newY += dy;
+                    }
+                });
+            }
+
+            makeMove(x, y) {
+                if (!this.isGameStarted || !this.isValidMove(x, y)) return false;
+                
+                this.board[y][x] = this.currentPlayer;
+                this.flipPieces(x, y);
+                this.updateBoard();
+                
+                // Switch players
+                this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+                
+                // If it's computer's turn, make a move
+                if (this.currentPlayer === 'white') {
+                    setTimeout(() => this.makeComputerMove(), 500); // Add delay for better UX
+                } else {
+                    this.showValidMoves();
+                }
+                
+                // Check if game is over
+                if (this.getValidMoves().length === 0) {
+                    this.endGame();
+                }
+                
+                return true;
+            }
+
+            evaluatePosition(x, y) {
+                // Static weights for different positions
+                const weights = [
+                    [100, -20, 10,  5,  5, 10, -20, 100],
+                    [-20, -50,  1,  1,  1,  1, -50, -20],
+                    [ 10,   1,  5,  2,  2,  5,   1,  10],
+                    [  5,   1,  2,  1,  1,  2,   1,   5],
+                    [  5,   1,  2,  1,  1,  2,   1,   5],
+                    [ 10,   1,  5,  2,  2,  5,   1,  10],
+                    [-20, -50,  1,  1,  1,  1, -50, -20],
+                    [100, -20, 10,  5,  5, 10, -20, 100]
+                ];
+                return weights[y][x];
+            }
+
+            makeComputerMove() {
+                const validMoves = this.getValidMoves();
+                if (validMoves.length === 0) {
+                    this.currentPlayer = 'black';
+                    if (this.getValidMoves().length === 0) {
+                        this.endGame();
+                    }
+                    return;
+                }
+
+                // Evaluate each move
+                let bestScore = -Infinity;
+                let bestMove = validMoves[0];
+
+                validMoves.forEach(([x, y]) => {
+                    // Make a temporary move
+                    const boardCopy = this.board.map(row => [...row]);
+                    this.board[y][x] = 'white';
+                    this.flipPieces(x, y);
+
+                    // Calculate score based on position and number of pieces flipped
+                    const positionScore = this.evaluatePosition(x, y);
+                    const flippedPieces = this.countPieces('white') - this.countPieces('black');
+                    const totalScore = positionScore + flippedPieces * 10;
+
+                    // Restore the board
+                    this.board = boardCopy;
+
+                    if (totalScore > bestScore) {
+                        bestScore = totalScore;
+                        bestMove = [x, y];
+                    }
+                });
+
+                // Make the best move
+                this.makeMove(...bestMove);
+            }
+
+            updateBoard() {
+                const cells = document.querySelectorAll('td');
+                cells.forEach(cell => {
+                    const x = parseInt(cell.dataset.x);
+                    const y = parseInt(cell.dataset.y);
+                    cell.innerHTML = '';
+                    
+                    if (this.board[y][x]) {
+                        const piece = document.createElement('span');
+                        piece.className = `${this.board[y][x]}-piece`;
+                        cell.appendChild(piece);
+                    }
+                });
+                
+                // Update game info
+                const gameInfo = document.getElementById('game-info');
+                if (this.isGameStarted) {
+                    const blackCount = this.countPieces('black');
+                    const whiteCount = this.countPieces('white');
+                    gameInfo.textContent = `黒: ${blackCount} 白: ${whiteCount}`;
+                }
+            }
+
+            countPieces(color) {
+                return this.board.flat().filter(cell => cell === color).length;
+            }
+
+            endGame() {
+                this.isGameStarted = false;
+                const blackCount = this.countPieces('black');
+                const whiteCount = this.countPieces('white');
+                const gameInfo = document.getElementById('game-info');
+                
+                if (blackCount > whiteCount) {
+                    gameInfo.textContent = `ゲーム終了 - あなたの勝ち! (黒: ${blackCount}, 白: ${whiteCount})`;
+                } else if (whiteCount > blackCount) {
+                    gameInfo.textContent = `ゲーム終了 - コンピューターの勝ち! (黒: ${blackCount}, 白: ${whiteCount})`;
+                } else {
+                    gameInfo.textContent = `ゲーム終了 - 引き分け! (黒: ${blackCount}, 白: ${whiteCount})`;
+                }
+                
+                document.getElementById('start-button').textContent = 'もう一度プレイ';
+            }
+        }
+
+        // Initialize game
+        const game = new OthelloGame();
+
+        // Add event listeners
+        document.getElementById('start-button').addEventListener('click', () => {
+            game.initializeBoard();
+        });
+
+        document.getElementById('game-board').addEventListener('click', (e) => {
+            if (!game.isGameStarted) return;
+            
+            const cell = e.target.closest('td');
+            if (!cell) return;
+            
+            const x = parseInt(cell.dataset.x);
+            const y = parseInt(cell.dataset.y);
+            
+            game.makeMove(x, y);
+        });
+    </script>
 </body>
 </html>
