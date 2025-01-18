@@ -210,6 +210,12 @@
         <h1>単語帳アプリ</h1>
         
         <div class="nav-buttons">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: inline-flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="reviewImmediately" style="margin-right: 0.5rem;">
+                    すぐに復習する
+                </label>
+            </div>
             <button id="startTestButton" class="primary-btn">単語テストを開始</button>
         </div>
 
@@ -253,6 +259,7 @@
                 this.wordList = document.getElementById('wordList');
                 this.currentTestIndex = 0;
                 this.testWords = [];
+                this.reviewImmediately = false;
                 
                 // テスト関連の要素
                 this.testContainer = document.getElementById('testContainer');
@@ -262,8 +269,11 @@
                 this.incorrectButton = document.getElementById('incorrectButton');
                 this.nextButton = document.getElementById('nextButton');
                 
-                // テスト開始ボタン
+                // テスト開始ボタンとチェックボックス
                 document.getElementById('startTestButton').addEventListener('click', () => this.startTest());
+                document.getElementById('reviewImmediately').addEventListener('change', (e) => {
+                    this.reviewImmediately = e.target.checked;
+                });
                 
                 if (this.form) {
                     this.form.addEventListener('submit', (e) => this.handleSubmit(e));
@@ -343,12 +353,23 @@
 
             getTestWords() {
                 const now = new Date();
+                const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
                 // 復習が必要な単語を取得
-                const reviewWords = this.words
+                const overdueWords = this.words
                     .filter(word => new Date(word.nextReviewDate) <= now)
                     .sort((a, b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
                 
-                return reviewWords.slice(0, 20); // 最大20個まで
+                // 今日登録された単語を取得（すぐに復習するがチェックされている場合）
+                const todayWords = this.reviewImmediately
+                    ? this.words
+                        .filter(word => new Date(word.timestamp) >= startOfToday)
+                        .filter(word => !overdueWords.includes(word))
+                    : [];
+                
+                // 期限切れの単語を優先し、その後に今日の単語を追加
+                const testWords = [...overdueWords, ...todayWords];
+                return testWords.slice(0, 20); // 最大20個まで
             }
 
             showCurrentTestWord() {
