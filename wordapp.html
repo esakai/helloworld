@@ -377,14 +377,14 @@
                 const currentNumber = this.currentTestIndex + 1;
                 const totalNumber = this.testWords.length;
                 this.testContent.innerHTML = `
-                    <div class="question-number" style="color: #666; margin-bottom: 1rem;">
-                        (${currentNumber}/${totalNumber})
-                    </div>
                     <div class="word-header" style="font-size: 1.5rem; margin: 1rem 0;">
                         ${word.word}
                     </div>
                     <div class="word-meaning" id="meaningDisplay" style="display: none;">
                         ${word.meaning}
+                    </div>
+                    <div class="question-number" style="color: #666; margin-top: 1rem;">
+                        (${currentNumber}/${totalNumber})
                     </div>
                 `;
 
