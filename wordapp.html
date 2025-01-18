@@ -227,7 +227,6 @@
                     <button id="showAnswerButton" class="secondary-btn">答えを表示</button>
                     <button id="correctButton" class="success-btn" style="display: none;">覚えている</button>
                     <button id="incorrectButton" class="danger-btn" style="display: none;">忘れていた</button>
-                    <button id="nextButton" class="primary-btn" style="display: none;">次へ</button>
                 </div>
             </div>
         </div>
@@ -267,8 +266,6 @@
                 this.showAnswerButton = document.getElementById('showAnswerButton');
                 this.correctButton = document.getElementById('correctButton');
                 this.incorrectButton = document.getElementById('incorrectButton');
-                this.nextButton = document.getElementById('nextButton');
-                
                 // テスト開始ボタンとチェックボックス
                 document.getElementById('startTestButton').addEventListener('click', () => this.startTest());
                 document.getElementById('reviewImmediately').addEventListener('change', (e) => {
@@ -396,7 +393,6 @@
                 this.showAnswerButton.onclick = () => this.showAnswer();
                 this.correctButton.onclick = () => this.handleAnswer(true);
                 this.incorrectButton.onclick = () => this.handleAnswer(false);
-                this.nextButton.onclick = () => this.showNextWord();
             }
 
             showAnswer() {
@@ -425,7 +421,7 @@
                 
                 this.correctButton.style.display = 'none';
                 this.incorrectButton.style.display = 'none';
-                this.nextButton.style.display = 'inline-block';
+                this.showNextWord();
             }
 
             getNextReviewDays(stage) {
