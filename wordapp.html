@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>単語帳アプリ</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            font-weight: 300;
+            font-size: 2.5rem;
+        }
+
+        .word-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        input[type="text"], 
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        .word-list {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .word-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .word-item:last-child {
+            border-bottom: none;
+        }
+
+        .word-header {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .word-meaning {
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .word-date {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .delete-btn {
+            background-color: #ff4444;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .no-words {
+            text-align: center;
+            color: #888;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>単語帳アプリ</h1>
+        
+        <div class="word-form">
+            <form id="wordForm">
+                <div class="form-group">
+                    <label for="word">単語</label>
+                    <input type="text" id="word" name="word" required>
+                </div>
+                <div class="form-group">
+                    <label for="meaning">意味</label>
+                    <textarea id="meaning" name="meaning" rows="3" required></textarea>
+                </div>
+                <button type="submit">保存</button>
+            </form>
+        </div>
+
+        <div class="word-list" id="wordList">
+            <!-- 単語リストがここに動的に追加されます -->
+        </div>
+    </div>
+
+    <script>
+        class VocabularyApp {
+            constructor() {
+                this.words = this.loadWords();
+                this.form = document.getElementById('wordForm');
+                this.wordList = document.getElementById('wordList');
+                
+                if (this.form) {
+                    this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+                } else {
+                    console.error('Form element not found');
+                }
+                this.renderWords();
+            }
+
+            loadWords() {
+                try {
+                    const words = localStorage.getItem('vocabulary');
+                    return words ? JSON.parse(words) : [];
+                } catch (error) {
+                    console.error('Error loading words:', error);
+                    return [];
+                }
+            }
+
+            saveWords() {
+                try {
+                    localStorage.setItem('vocabulary', JSON.stringify(this.words));
+                } catch (error) {
+                    console.error('Error saving words:', error);
+                }
+            }
+
+            handleSubmit(event) {
+                event.preventDefault();
+                
+                const wordInput = document.getElementById('word');
+                const meaningInput = document.getElementById('meaning');
+                
+                if (!wordInput || !meaningInput) {
+                    console.error('Form inputs not found');
+                    return;
+                }
+                
+                const newWord = {
+                    id: Date.now(),
+                    word: wordInput.value.trim(),
+                    meaning: meaningInput.value.trim(),
+                    timestamp: new Date().toISOString()
+                };
+
+                if (newWord.word && newWord.meaning) {
+                    this.words.unshift(newWord);
+                    this.saveWords();
+                    this.renderWords();
+                    
+                    wordInput.value = '';
+                    meaningInput.value = '';
+                }
+            }
+
+            deleteWord(id) {
+                this.words = this.words.filter(word => word.id !== id);
+                this.saveWords();
+                this.renderWords();
+            }
+
+            formatDate(dateString) {
+                const options = {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return new Date(dateString).toLocaleString('ja-JP', options);
+            }
+
+            renderWords() {
+                if (this.words.length === 0) {
+                    this.wordList.innerHTML = '<div class="no-words">単語が登録されていません</div>';
+                    return;
+                }
+
+                this.wordList.innerHTML = this.words
+                    .map(word => `
+                        <div class="word-item">
+                            <div>
+                                <div class="word-header">${word.word}</div>
+                                <div class="word-meaning">${word.meaning}</div>
+                                <div class="word-date">${this.formatDate(word.timestamp)}</div>
+                            </div>
+                            <button class="delete-btn" onclick="app.deleteWord(${word.id})">削除</button>
+                        </div>
+                    `)
+                    .join('');
+            }
+        }
+
+        const app = new VocabularyApp();
+    </script>
+</body>
+</html>
