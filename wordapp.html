@@ -170,6 +170,22 @@
             display: flex;
             gap: 1rem;
             justify-content: center;
+            min-height: 45px; /* ボタンの高さを確保 */
+        }
+        
+        .test-buttons button {
+            min-width: 120px; /* ボタンの最小幅を設定 */
+            visibility: hidden; /* 非表示時でもスペースを確保 */
+            position: absolute; /* 位置を固定 */
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .test-buttons button[style*="display: inline-block"],
+        .test-buttons button:not([style*="display: none"]) {
+            visibility: visible;
+            position: static;
+            opacity: 1;
         }
 
         .primary-btn {
@@ -315,7 +331,7 @@
                     meaning: meaningInput.value.trim(),
                     timestamp: new Date().toISOString(),
                     stage: 1,
-                    nextReviewDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                    nextReviewDate: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
                     correctCount: 0,
                     incorrectCount: 0
                 };
@@ -388,6 +404,13 @@
                 this.showAnswerButton.style.display = 'inline-block';
                 this.correctButton.style.display = 'none';
                 this.incorrectButton.style.display = 'none';
+                
+                // ボタンのアニメーション効果を適用
+                requestAnimationFrame(() => {
+                    this.showAnswerButton.style.opacity = '1';
+                    this.correctButton.style.opacity = '0';
+                    this.incorrectButton.style.opacity = '0';
+                });
 
                 this.showAnswerButton.onclick = () => this.showAnswer();
                 this.correctButton.onclick = () => this.handleAnswer(true);
@@ -399,6 +422,13 @@
                 this.showAnswerButton.style.display = 'none';
                 this.correctButton.style.display = 'inline-block';
                 this.incorrectButton.style.display = 'inline-block';
+                
+                // ボタンのアニメーション効果を適用
+                requestAnimationFrame(() => {
+                    this.showAnswerButton.style.opacity = '0';
+                    this.correctButton.style.opacity = '1';
+                    this.incorrectButton.style.opacity = '1';
+                });
             }
 
             handleAnswer(isCorrect) {
