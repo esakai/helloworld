@@ -392,10 +392,10 @@
                     <div class="word-header" style="font-size: 1.5rem; margin: 1rem 0;">
                         ${word.word}
                     </div>
-                    <div class="word-meaning" id="meaningDisplay" style="display: none;">
+                    <div class="word-meaning" id="meaningDisplay" style="visibility: hidden; min-height: 3rem; margin: 1.5rem 0;">
                         ${word.meaning}
                     </div>
-                    <div class="question-number" style="color: #666; margin-top: 0.5rem;">
+                    <div class="question-number" style="color: #666;">
                         (${currentNumber}/${totalNumber})
                     </div>
                 `;
@@ -410,7 +410,7 @@
             }
 
             showAnswer() {
-                document.getElementById('meaningDisplay').style.display = 'block';
+                document.getElementById('meaningDisplay').style.visibility = 'visible';
                 this.showAnswerButton.classList.add('hidden');
                 this.correctButton.classList.remove('hidden');
                 this.incorrectButton.classList.remove('hidden');
