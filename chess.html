@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>コンピューター対戦チェス（評価関数改善版）</title>
+  <title>コンピューター対戦チェス（ミニマックス2手先探索）</title>
   <style>
     body { 
       background: #eee; 
@@ -29,7 +29,7 @@
     const cellSize = 60;
     let gameOver = false;
 
-    // キャスリング判定用の移動済みフラグ
+    // キャスリング判定用の移動済みフラグ（※探索中は反映されないので注意）
     let whiteKingMoved = false, blackKingMoved = false;
     let whiteKingsideRookMoved = false, whiteQueensideRookMoved = false;
     let blackKingsideRookMoved = false, blackQueensideRookMoved = false;
@@ -76,7 +76,7 @@
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = "black";
-            ctx.fillText(pieceSymbols[piece], x + cellSize / 2, y + cellSize / 2 + 4);
+            ctx.fillText(pieceSymbols[piece], x + cellSize/2, y + cellSize/2 + 4);
           }
         }
       }
@@ -85,13 +85,13 @@
     function updateMessage() {
       if (gameOver) return;
       document.getElementById("message").innerText =
-        (currentTurn === "w") ? "Turn: Human (White)" : "Turn: Computer (Black)";
+         (currentTurn === "w") ? "Turn: Human (White)" : "Turn: Computer (Black)";
     }
 
     // --- UI改善：クリック時、もしクリック先に自分の駒があれば新たに選択 ---
     function onCellClick(row, col) {
       if (gameOver) return;
-      // クリック先が現在の手番の駒なら、その駒を選択（既に選択中でも上書き）
+      // クリック先が現在の手番の駒なら、その駒を選択（上書き可能）
       if (board[row][col] && board[row][col][0] === currentTurn) {
         selected = { row, col };
         drawBoard();
@@ -142,7 +142,7 @@
         if (fromRow === 0 && fromCol === 7) blackKingsideRookMoved = true;
       }
 
-      // キャスリングの場合：キングが横に2マス動いたと判断
+      // キャスリングの場合：キングが横に2マス動いたとみなす
       if ((piece === "wK" || piece === "bK") && Math.abs(toCol - fromCol) === 2) {
         if (piece === "wK") {
           if (toCol === 6) { // キングサイド
@@ -180,13 +180,12 @@
       checkGameOver();
     }
 
-    // --- 局面評価関数の強化 ---
-    // 　・各駒の基本価値に加え、盤面中央（行3,4 かつ列3,4）にある駒にボーナスを付与
-    // 　・さらに、各サイドのモビリティ（合法手の数）を評価に反映
+    // --- 評価関数の強化 ---
+    // 各駒の基本価値に加え、盤面中央（行3,4 かつ列3,4）へのボーナスとモビリティ（合法手数）の評価を反映
     function evaluateBoard(b) {
       let value = 0;
       const pieceValue = { "P": 1, "N": 3, "B": 3, "R": 5, "Q": 9, "K": 1000 };
-      const centralBonus = 0.3; // 盤面中央（行3,4, 列3,4）にいる駒に与えるボーナス
+      const centralBonus = 0.3; // 盤面中央にいる場合のボーナス
       for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
           const piece = b[row][col];
@@ -206,9 +205,49 @@
       return value;
     }
 
-    // モビリティ（各サイドの合法手の数）をカウントする
+    // 指定盤面 b における、color 側の合法手数をカウント
     function countMobility(b, color) {
       let moves = 0;
+      const legalMoves = generateLegalMoves(b, color);
+      moves = legalMoves.length;
+      return moves;
+    }
+
+    // --- ミニマックス探索 ---
+    // 深さ depth が 0 の場合は評価値を返す
+    // それ以外は、与えられた色の合法手を生成し、再帰的に探索する
+    function minimax(b, depth, isMaximizing, color) {
+      if (depth === 0) {
+        return evaluateBoard(b);
+      }
+      const moves = generateLegalMoves(b, color);
+      if (moves.length === 0) {
+        return evaluateBoard(b);
+      }
+      const nextColor = (color === "w") ? "b" : "w";
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (const move of moves) {
+          const newBoard = simulateMoveOnBoard(b, move.fromRow, move.fromCol, move.toRow, move.toCol);
+          const score = minimax(newBoard, depth - 1, false, nextColor);
+          bestScore = Math.max(bestScore, score);
+        }
+        return bestScore;
+      } else {
+        let bestScore = Infinity;
+        for (const move of moves) {
+          const newBoard = simulateMoveOnBoard(b, move.fromRow, move.fromCol, move.toRow, move.toCol);
+          const score = minimax(newBoard, depth - 1, true, nextColor);
+          bestScore = Math.min(bestScore, score);
+        }
+        return bestScore;
+      }
+    }
+
+    // --- 合法手生成 ---
+    // 与えられた盤面 b と色 color について、チェックを回避できる合法手を返す
+    function generateLegalMoves(b, color) {
+      const moves = [];
       for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
           const piece = b[row][col];
@@ -216,7 +255,10 @@
             for (let r = 0; r < 8; r++) {
               for (let c = 0; c < 8; c++) {
                 if (isLegalMoveOnBoard(b, row, col, r, c)) {
-                  moves++;
+                  const newBoard = simulateMoveOnBoard(b, row, col, r, c);
+                  if (!isInCheckOnBoard(newBoard, color)) {
+                    moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
+                  }
                 }
               }
             }
@@ -226,10 +268,11 @@
       return moves;
     }
 
-    // コンピューター側（黒）の手選択：すべての合法手をシミュレーションして、評価値が最も良い手を選ぶ
+    // --- コンピューター側の手選択（ミニマックス探索 depth = 2） ---
     function computerMove() {
       if (gameOver) return;
-      let moves = [];
+      const moves = [];
+      // まず、現在の盤面から黒側の合法手を生成
       for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
           const piece = board[row][col];
@@ -252,12 +295,13 @@
         gameOver = true;
         return;
       }
+      // 各候補手について、2手先（＝自分の手＋相手の応手）のミニマックス評価を行う
       let bestScore = -Infinity;
       let bestMoves = [];
-      for (let i = 0; i < moves.length; i++) {
-        const move = moves[i];
+      for (const move of moves) {
         const newBoard = simulateMoveOnBoard(board, move.fromRow, move.fromCol, move.toRow, move.toCol);
-        const score = evaluateBoard(newBoard);
+        // 探索深度を 1 として、相手（白）の最善応手を想定（自分は最大化する側）
+        const score = minimax(newBoard, 1, false, "w");
         if (score > bestScore) {
           bestScore = score;
           bestMoves = [move];
@@ -545,6 +589,106 @@
         }
       }
       return false;
+    }
+
+    // --- ミニマックス探索（深さ depth, 現在の色 color, isMaximizing: trueなら最大化、falseなら最小化） ---
+    function minimax(b, depth, isMaximizing, color) {
+      if (depth === 0) {
+        return evaluateBoard(b);
+      }
+      const moves = generateLegalMoves(b, color);
+      if (moves.length === 0) {
+        return evaluateBoard(b);
+      }
+      const nextColor = (color === "w") ? "b" : "w";
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (const move of moves) {
+          const newBoard = simulateMoveOnBoard(b, move.fromRow, move.fromCol, move.toRow, move.toCol);
+          const score = minimax(newBoard, depth - 1, false, nextColor);
+          bestScore = Math.max(bestScore, score);
+        }
+        return bestScore;
+      } else {
+        let bestScore = Infinity;
+        for (const move of moves) {
+          const newBoard = simulateMoveOnBoard(b, move.fromRow, move.fromCol, move.toRow, move.toCol);
+          const score = minimax(newBoard, depth - 1, true, nextColor);
+          bestScore = Math.min(bestScore, score);
+        }
+        return bestScore;
+      }
+    }
+
+    // --- 合法手生成 ---
+    function generateLegalMoves(b, color) {
+      const moves = [];
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const piece = b[row][col];
+          if (piece && piece[0] === color) {
+            for (let r = 0; r < 8; r++) {
+              for (let c = 0; c < 8; c++) {
+                if (isLegalMoveOnBoard(b, row, col, r, c)) {
+                  const newBoard = simulateMoveOnBoard(b, row, col, r, c);
+                  if (!isInCheckOnBoard(newBoard, color)) {
+                    moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      return moves;
+    }
+
+    // --- コンピューター側の手選択（ミニマックス探索 depth=2） ---
+    // 今回は、黒の手候補それぞれについて、白の最善応手（深さ1）を想定して評価する
+    function computerMove() {
+      if (gameOver) return;
+      const moves = [];
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const piece = board[row][col];
+          if (piece && piece[0] === "b") {
+            for (let r = 0; r < 8; r++) {
+              for (let c = 0; c < 8; c++) {
+                if (isLegalMove(row, col, r, c)) {
+                  const newBoard = simulateMoveOnBoard(board, row, col, r, c);
+                  if (!isInCheckOnBoard(newBoard, "b")) {
+                    moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (moves.length === 0) {
+        alert("コンピューターは動けません。ゲーム終了！");
+        gameOver = true;
+        return;
+      }
+      let bestScore = -Infinity;
+      let bestMoves = [];
+      for (const move of moves) {
+        const newBoard = simulateMoveOnBoard(board, move.fromRow, move.fromCol, move.toRow, move.toCol);
+        // 探索深度2：自分（黒）の手＋相手（白）の最善応手（深さ1）
+        const score = minimax(newBoard, 1, false, "w");
+        if (score > bestScore) {
+          bestScore = score;
+          bestMoves = [move];
+        } else if (score === bestScore) {
+          bestMoves.push(move);
+        }
+      }
+      const chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+      movePiece(chosenMove.fromRow, chosenMove.fromCol, chosenMove.toRow, chosenMove.toCol);
+      drawBoard();
+      if (!gameOver && currentTurn === "b") {
+        setTimeout(computerMove, 500);
+      }
     }
 
     // --- 初期描画 ---
