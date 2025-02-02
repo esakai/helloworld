@@ -1,13 +1,21 @@
-<!-- ここからHTML全体の例 -->
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>コンピューター対戦チェス（改良版）</title>
+  <title>コンピューター対戦チェス（改良版：let/const版）</title>
   <style>
-    body { background: #eee; font-family: sans-serif; text-align: center; }
-    #message { margin: 10px; font-size: 20px; }
-    canvas { border: 2px solid #333; }
+    body { 
+      background: #eee; 
+      font-family: sans-serif; 
+      text-align: center; 
+    }
+    #message { 
+      margin: 10px; 
+      font-size: 20px; 
+    }
+    canvas { 
+      border: 2px solid #333; 
+    }
   </style>
 </head>
 <body>
@@ -15,58 +23,60 @@
   <canvas id="chessCanvas" width="480" height="480"></canvas>
 
   <script>
-    // ----- キャンバス・グローバル変数など -----
-    var canvas = document.getElementById("chessCanvas");
-    var ctx = canvas.getContext("2d");
-    var cellSize = 60;
-    var gameOver = false;
+    // --- キャンバスとグローバル変数 ---
+    const canvas = document.getElementById("chessCanvas");
+    const ctx = canvas.getContext("2d");
+    const cellSize = 60;
+    let gameOver = false;
 
-    // キャスリング用移動済みフラグ
-    var whiteKingMoved = false, blackKingMoved = false;
-    var whiteKingsideRookMoved = false, whiteQueensideRookMoved = false;
-    var blackKingsideRookMoved = false, blackQueensideRookMoved = false;
+    // キャスリング判定用の移動済みフラグ
+    let whiteKingMoved = false, blackKingMoved = false;
+    let whiteKingsideRookMoved = false, whiteQueensideRookMoved = false;
+    let blackKingsideRookMoved = false, blackQueensideRookMoved = false;
 
     // 初期盤面（上段：黒、下段：白）
-    var board = [
-      ["bR","bN","bB","bQ","bK","bB","bN","bR"],
-      ["bP","bP","bP","bP","bP","bP","bP","bP"],
+    const board = [
+      ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
+      ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
       [null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null],
-      ["wP","wP","wP","wP","wP","wP","wP","wP"],
-      ["wR","wN","wB","wQ","wK","wB","wN","wR"]
+      ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
+      ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]
     ];
 
-    var pieceSymbols = {
+    const pieceSymbols = {
       "wK": "♔", "wQ": "♕", "wR": "♖", "wB": "♗", "wN": "♘", "wP": "♙",
       "bK": "♚", "bQ": "♛", "bR": "♜", "bB": "♝", "bN": "♞", "bP": "♟"
     };
 
-    var currentTurn = "w"; // "w" = Human (White), "b" = Computer (Black)
-    var selected = null;
+    let currentTurn = "w"; // "w" = Human (White), "b" = Computer (Black)
+    let selected = null;
 
-    // ----- 描画、UI更新などの関数（以前のコードと同様） -----
+    // --- 描画・UI更新 ---
     function drawBoard() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (var row = 0; row < 8; row++) {
-        for (var col = 0; col < 8; col++) {
-          var x = col * cellSize;
-          var y = row * cellSize;
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const x = col * cellSize;
+          const y = row * cellSize;
           ctx.fillStyle = ((row + col) % 2 === 0) ? "#f0d9b5" : "#b58863";
           ctx.fillRect(x, y, cellSize, cellSize);
+
           if (selected && selected.row === row && selected.col === col) {
             ctx.strokeStyle = "red";
             ctx.lineWidth = 3;
-            ctx.strokeRect(x+1, y+1, cellSize-2, cellSize-2);
+            ctx.strokeRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
           }
+
           if (board[row][col]) {
-            var piece = board[row][col];
+            const piece = board[row][col];
             ctx.font = "48px serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = "black";
-            ctx.fillText(pieceSymbols[piece], x + cellSize/2, y + cellSize/2 + 4);
+            ctx.fillText(pieceSymbols[piece], x + cellSize / 2, y + cellSize / 2 + 4);
           }
         }
       }
@@ -75,16 +85,16 @@
     function updateMessage() {
       if (gameOver) return;
       document.getElementById("message").innerText =
-         (currentTurn === "w") ? "Turn: Human (White)" : "Turn: Computer (Black)";
+        (currentTurn === "w") ? "Turn: Human (White)" : "Turn: Computer (Black)";
     }
 
-    canvas.addEventListener("click", function(event) {
+    canvas.addEventListener("click", (event) => {
       if (gameOver || currentTurn !== "w") return;
-      var rect = canvas.getBoundingClientRect();
-      var x = event.clientX - rect.left;
-      var y = event.clientY - rect.top;
-      var col = Math.floor(x / cellSize);
-      var row = Math.floor(y / cellSize);
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const col = Math.floor(x / cellSize);
+      const row = Math.floor(y / cellSize);
       onCellClick(row, col);
     });
 
@@ -92,7 +102,7 @@
       if (gameOver) return;
       if (!selected) {
         if (board[row][col] && board[row][col][0] === "w") {
-          selected = { row: row, col: col };
+          selected = { row, col };
           drawBoard();
         }
       } else {
@@ -116,11 +126,13 @@
       }
     }
 
-    // ----- movePiece 関数（キャスリング、パーン昇格、移動済みフラグ更新など） -----
+    // --- 駒移動（キャスリング、パーン昇格、移動済みフラグ更新、手番交代、チェック判定） ---
     function movePiece(fromRow, fromCol, toRow, toCol) {
-      var piece = board[fromRow][fromCol];
+      const piece = board[fromRow][fromCol];
       board[toRow][toCol] = piece;
       board[fromRow][fromCol] = null;
+
+      // キングまたはルークが移動したら該当フラグを更新
       if (piece === "wK") whiteKingMoved = true;
       if (piece === "bK") blackKingMoved = true;
       if (piece === "wR") {
@@ -131,7 +143,8 @@
         if (fromRow === 0 && fromCol === 0) blackQueensideRookMoved = true;
         if (fromRow === 0 && fromCol === 7) blackKingsideRookMoved = true;
       }
-      // キャスリングの場合：キングが横に2マス動いていると判断
+
+      // キャスリングの場合：キングが横に2マス動いたとみなす
       if ((piece === "wK" || piece === "bK") && Math.abs(toCol - fromCol) === 2) {
         if (piece === "wK") {
           if (toCol === 6) { // キングサイド
@@ -156,27 +169,29 @@
           }
         }
       }
+
       // パーン昇格
       if (piece[1] === "P") {
         if ((piece[0] === "w" && toRow === 0) || (piece[0] === "b" && toRow === 7)) {
           board[toRow][toCol] = piece[0] + "Q";
         }
       }
+
       currentTurn = (currentTurn === "w") ? "b" : "w";
       updateMessage();
       checkGameOver();
     }
 
-    // ----- ここから「評価関数」を使ったコンピューター側の処理改善 -----
-    // 局面評価関数：黒側の駒の合計価値 - 白側の駒の合計価値
+    // --- 局面評価とコンピューターの手選択 ---
+    // 各駒の価値に基づいて局面の材料評価を計算
     function evaluateBoard(b) {
-      var value = 0;
-      var pieceValue = { "P": 1, "N": 3, "B": 3, "R": 5, "Q": 9, "K": 1000 };
-      for (var row = 0; row < 8; row++) {
-        for (var col = 0; col < 8; col++) {
-          var piece = b[row][col];
+      let value = 0;
+      const pieceValue = { "P": 1, "N": 3, "B": 3, "R": 5, "Q": 9, "K": 1000 };
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const piece = b[row][col];
           if (piece) {
-            var sign = (piece[0] === "b") ? 1 : -1;
+            const sign = (piece[0] === "b") ? 1 : -1;
             value += sign * (pieceValue[piece[1]] || 0);
           }
         }
@@ -184,20 +199,18 @@
       return value;
     }
 
-    // コンピューター側の手：すべての合法手をシミュレーションし、評価値が最大になる手を選ぶ
+    // コンピューター側（黒）は、すべての合法手をシミュレーションして1手先の評価が最も良い手を選ぶ
     function computerMove() {
       if (gameOver) return;
-      var moves = [];
-      // 黒のすべての合法手を収集
-      for (var row = 0; row < 8; row++) {
-        for (var col = 0; col < 8; col++) {
-          var piece = board[row][col];
+      let moves = [];
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          const piece = board[row][col];
           if (piece && piece[0] === "b") {
-            for (var r = 0; r < 8; r++) {
-              for (var c = 0; c < 8; c++) {
+            for (let r = 0; r < 8; r++) {
+              for (let c = 0; c < 8; c++) {
                 if (isLegalMove(row, col, r, c)) {
-                  // ※　チェック回避も含めるため、シミュレーション後にキングが守られているかも確認
-                  var newBoard = simulateMoveOnBoard(board, row, col, r, c);
+                  const newBoard = simulateMoveOnBoard(board, row, col, r, c);
                   if (!isInCheckOnBoard(newBoard, "b")) {
                     moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
                   }
@@ -212,13 +225,12 @@
         gameOver = true;
         return;
       }
-      // 各候補手について局面評価を計算し、最高評価の手を選択
-      var bestScore = -Infinity;
-      var bestMoves = [];
-      for (var i = 0; i < moves.length; i++) {
-        var move = moves[i];
-        var newBoard = simulateMoveOnBoard(board, move.fromRow, move.fromCol, move.toRow, move.toCol);
-        var score = evaluateBoard(newBoard);
+      let bestScore = -Infinity;
+      let bestMoves = [];
+      for (let i = 0; i < moves.length; i++) {
+        const move = moves[i];
+        const newBoard = simulateMoveOnBoard(board, move.fromRow, move.fromCol, move.toRow, move.toCol);
+        const score = evaluateBoard(newBoard);
         if (score > bestScore) {
           bestScore = score;
           bestMoves = [move];
@@ -226,7 +238,7 @@
           bestMoves.push(move);
         }
       }
-      var chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+      const chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
       movePiece(chosenMove.fromRow, chosenMove.fromCol, chosenMove.toRow, chosenMove.toCol);
       drawBoard();
       if (!gameOver && currentTurn === "b") {
@@ -234,14 +246,14 @@
       }
     }
 
-    // ----- 以下はこれまでと同様の「移動ルール」や「チェック判定」用関数群 -----
+    // --- 移動ルールとキャスリング条件 ---
     function isLegalMove(fromRow, fromCol, toRow, toCol) {
-      var piece = board[fromRow][fromCol];
+      const piece = board[fromRow][fromCol];
       if (!piece) return false;
-      var color = piece[0], type = piece[1];
-      var dest = board[toRow][toCol];
+      const color = piece[0], type = piece[1];
+      const dest = board[toRow][toCol];
       if (dest && dest[0] === color) return false;
-      var dRow = toRow - fromRow, dCol = toCol - fromCol;
+      const dRow = toRow - fromRow, dCol = toCol - fromCol;
       switch (type) {
         case "P":
           if (color === "w") {
@@ -289,18 +301,18 @@
                 if (whiteKingsideRookMoved || board[7][7] !== "wR") return false;
                 if (board[7][5] !== null || board[7][6] !== null) return false;
                 if (isSquareAttacked(7, 4, "w")) return false;
-                var simBoard = simulateMoveOnBoard(board, 7, 4, 7, 5);
+                const simBoard = simulateMoveOnBoard(board, 7, 4, 7, 5);
                 if (isSquareAttackedOnBoard(simBoard, 7, 5, "w")) return false;
-                var simBoard2 = simulateMoveOnBoard(board, 7, 4, 7, 6);
+                const simBoard2 = simulateMoveOnBoard(board, 7, 4, 7, 6);
                 if (isSquareAttackedOnBoard(simBoard2, 7, 6, "w")) return false;
                 return true;
               } else if (dCol === -2) {
                 if (whiteQueensideRookMoved || board[7][0] !== "wR") return false;
                 if (board[7][1] !== null || board[7][2] !== null || board[7][3] !== null) return false;
                 if (isSquareAttacked(7, 4, "w")) return false;
-                var simBoard = simulateMoveOnBoard(board, 7, 4, 7, 3);
+                const simBoard = simulateMoveOnBoard(board, 7, 4, 7, 3);
                 if (isSquareAttackedOnBoard(simBoard, 7, 3, "w")) return false;
-                var simBoard2 = simulateMoveOnBoard(board, 7, 4, 7, 2);
+                const simBoard2 = simulateMoveOnBoard(board, 7, 4, 7, 2);
                 if (isSquareAttackedOnBoard(simBoard2, 7, 2, "w")) return false;
                 return true;
               }
@@ -309,18 +321,18 @@
                 if (blackKingsideRookMoved || board[0][7] !== "bR") return false;
                 if (board[0][5] !== null || board[0][6] !== null) return false;
                 if (isSquareAttacked(0, 4, "b")) return false;
-                var simBoard = simulateMoveOnBoard(board, 0, 4, 0, 5);
+                const simBoard = simulateMoveOnBoard(board, 0, 4, 0, 5);
                 if (isSquareAttackedOnBoard(simBoard, 0, 5, "b")) return false;
-                var simBoard2 = simulateMoveOnBoard(board, 0, 4, 0, 6);
+                const simBoard2 = simulateMoveOnBoard(board, 0, 4, 0, 6);
                 if (isSquareAttackedOnBoard(simBoard2, 0, 6, "b")) return false;
                 return true;
               } else if (dCol === -2) {
                 if (blackQueensideRookMoved || board[0][0] !== "bR") return false;
                 if (board[0][1] !== null || board[0][2] !== null || board[0][3] !== null) return false;
                 if (isSquareAttacked(0, 4, "b")) return false;
-                var simBoard = simulateMoveOnBoard(board, 0, 4, 0, 3);
+                const simBoard = simulateMoveOnBoard(board, 0, 4, 0, 3);
                 if (isSquareAttackedOnBoard(simBoard, 0, 3, "b")) return false;
-                var simBoard2 = simulateMoveOnBoard(board, 0, 4, 0, 2);
+                const simBoard2 = simulateMoveOnBoard(board, 0, 4, 0, 2);
                 if (isSquareAttackedOnBoard(simBoard2, 0, 2, "b")) return false;
                 return true;
               }
@@ -334,10 +346,10 @@
     }
 
     function isPathClear(fromRow, fromCol, toRow, toCol) {
-      var dRow = toRow - fromRow, dCol = toCol - fromCol;
-      var stepRow = dRow === 0 ? 0 : (dRow > 0 ? 1 : -1);
-      var stepCol = dCol === 0 ? 0 : (dCol > 0 ? 1 : -1);
-      var currentRow = fromRow + stepRow, currentCol = fromCol + stepCol;
+      const dRow = toRow - fromRow, dCol = toCol - fromCol;
+      const stepRow = dRow === 0 ? 0 : (dRow > 0 ? 1 : -1);
+      const stepCol = dCol === 0 ? 0 : (dCol > 0 ? 1 : -1);
+      let currentRow = fromRow + stepRow, currentCol = fromCol + stepCol;
       while (currentRow !== toRow || currentCol !== toCol) {
         if (board[currentRow][currentCol] !== null) return false;
         currentRow += stepRow;
@@ -346,13 +358,13 @@
       return true;
     }
 
-    // ----- シミュレーション・チェック用関数群 -----
+    // --- シミュレーション・チェック用関数 ---
     function simulateMoveOnBoard(b, fromRow, fromCol, toRow, toCol) {
-      var newBoard = [];
-      for (var i = 0; i < 8; i++) {
+      const newBoard = [];
+      for (let i = 0; i < 8; i++) {
         newBoard[i] = b[i].slice();
       }
-      var movedPiece = newBoard[fromRow][fromCol];
+      const movedPiece = newBoard[fromRow][fromCol];
       newBoard[toRow][toCol] = movedPiece;
       newBoard[fromRow][fromCol] = null;
       if (movedPiece && movedPiece[1] === "P") {
@@ -365,28 +377,22 @@
     }
 
     function isLegalMoveOnBoard(b, fromRow, fromCol, toRow, toCol) {
-      var piece = b[fromRow][fromCol];
+      const piece = b[fromRow][fromCol];
       if (!piece) return false;
-      var color = piece[0], type = piece[1];
-      var dest = b[toRow][toCol];
+      const color = piece[0], type = piece[1];
+      const dest = b[toRow][toCol];
       if (dest && dest[0] === color) return false;
-      var dRow = toRow - fromRow, dCol = toCol - fromCol;
+      const dRow = toRow - fromRow, dCol = toCol - fromCol;
       switch (type) {
         case "P":
           if (color === "w") {
             if (dCol === 0 && dRow === -1 && b[toRow][toCol] === null) return true;
-            if (dCol === 0 && dRow === -2 && fromRow === 6 &&
-                b[fromRow - 1][fromCol] === null && b[toRow][toCol] === null)
-              return true;
-            if (Math.abs(dCol) === 1 && dRow === -1 &&
-                b[toRow][toCol] && b[toRow][toCol][0] === "b") return true;
+            if (dCol === 0 && dRow === -2 && fromRow === 6 && b[fromRow - 1][fromCol] === null && b[toRow][toCol] === null) return true;
+            if (Math.abs(dCol) === 1 && dRow === -1 && b[toRow][toCol] && b[toRow][toCol][0] === "b") return true;
           } else {
             if (dCol === 0 && dRow === 1 && b[toRow][toCol] === null) return true;
-            if (dCol === 0 && dRow === 2 && fromRow === 1 &&
-                b[fromRow + 1][fromCol] === null && b[toRow][toCol] === null)
-              return true;
-            if (Math.abs(dCol) === 1 && dRow === 1 &&
-                b[toRow][toCol] && b[toRow][toCol][0] === "w") return true;
+            if (dCol === 0 && dRow === 2 && fromRow === 1 && b[fromRow + 1][fromCol] === null && b[toRow][toCol] === null) return true;
+            if (Math.abs(dCol) === 1 && dRow === 1 && b[toRow][toCol] && b[toRow][toCol][0] === "w") return true;
           }
           return false;
         case "R":
@@ -414,10 +420,10 @@
     }
 
     function isPathClearOnBoard(b, fromRow, fromCol, toRow, toCol) {
-      var dRow = toRow - fromRow, dCol = toCol - fromCol;
-      var stepRow = dRow === 0 ? 0 : (dRow > 0 ? 1 : -1);
-      var stepCol = dCol === 0 ? 0 : (dCol > 0 ? 1 : -1);
-      var currentRow = fromRow + stepRow, currentCol = fromCol + stepCol;
+      const dRow = toRow - fromRow, dCol = toCol - fromCol;
+      const stepRow = dRow === 0 ? 0 : (dRow > 0 ? 1 : -1);
+      const stepCol = dCol === 0 ? 0 : (dCol > 0 ? 1 : -1);
+      let currentRow = fromRow + stepRow, currentCol = fromCol + stepCol;
       while (currentRow !== toRow || currentCol !== toCol) {
         if (b[currentRow][currentCol] !== null) return false;
         currentRow += stepRow;
@@ -427,20 +433,22 @@
     }
 
     function isInCheckOnBoard(b, color) {
-      var kingRow = -1, kingCol = -1;
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
+      let kingRow = -1, kingCol = -1;
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
           if (b[i][j] === color + "K") {
-            kingRow = i; kingCol = j; break;
+            kingRow = i; 
+            kingCol = j; 
+            break;
           }
         }
         if (kingRow !== -1) break;
       }
       if (kingRow === -1) return true;
-      var opponent = (color === "w") ? "b" : "w";
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-          var piece = b[i][j];
+      const opponent = (color === "w") ? "b" : "w";
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const piece = b[i][j];
           if (piece && piece[0] === opponent) {
             if (isLegalMoveOnBoard(b, i, j, kingRow, kingCol)) return true;
           }
@@ -450,14 +458,14 @@
     }
 
     function canMove(color) {
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-          var piece = board[i][j];
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const piece = board[i][j];
           if (piece && piece[0] === color) {
-            for (var r = 0; r < 8; r++) {
-              for (var c = 0; c < 8; c++) {
+            for (let r = 0; r < 8; r++) {
+              for (let c = 0; c < 8; c++) {
                 if (isLegalMove(i, j, r, c)) {
-                  var newBoard = simulateMoveOnBoard(board, i, j, r, c);
+                  const newBoard = simulateMoveOnBoard(board, i, j, r, c);
                   if (!isInCheckOnBoard(newBoard, color)) return true;
                 }
               }
@@ -477,16 +485,16 @@
     function checkGameOver() {
       if (isCheckmate(currentTurn)) {
         gameOver = true;
-        var winner = (currentTurn === "w") ? "Black" : "White";
+        const winner = (currentTurn === "w") ? "Black" : "White";
         document.getElementById("message").innerText = "Checkmate! " + winner + " wins!";
       }
     }
 
     function isSquareAttacked(row, col, color) {
-      var opponent = (color === "w") ? "b" : "w";
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-          var piece = board[i][j];
+      const opponent = (color === "w") ? "b" : "w";
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const piece = board[i][j];
           if (piece && piece[0] === opponent) {
             if (isLegalMoveOnBoard(board, i, j, row, col)) return true;
           }
@@ -496,10 +504,10 @@
     }
 
     function isSquareAttackedOnBoard(b, row, col, color) {
-      var opponent = (color === "w") ? "b" : "w";
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-          var piece = b[i][j];
+      const opponent = (color === "w") ? "b" : "w";
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const piece = b[i][j];
           if (piece && piece[0] === opponent) {
             if (isLegalMoveOnBoard(b, i, j, row, col)) return true;
           }
@@ -508,54 +516,7 @@
       return false;
     }
 
-    // ----- 改善したコンピューター側の手選択（1手先評価） -----
-    function computerMove() {
-      if (gameOver) return;
-      var moves = [];
-      for (var row = 0; row < 8; row++) {
-        for (var col = 0; col < 8; col++) {
-          var piece = board[row][col];
-          if (piece && piece[0] === "b") {
-            for (var r = 0; r < 8; r++) {
-              for (var c = 0; c < 8; c++) {
-                if (isLegalMove(row, col, r, c)) {
-                  var newBoard = simulateMoveOnBoard(board, row, col, r, c);
-                  if (!isInCheckOnBoard(newBoard, "b")) {
-                    moves.push({ fromRow: row, fromCol: col, toRow: r, toCol: c });
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      if (moves.length === 0) {
-        alert("コンピューターは動けません。ゲーム終了！");
-        gameOver = true;
-        return;
-      }
-      var bestScore = -Infinity;
-      var bestMoves = [];
-      for (var i = 0; i < moves.length; i++) {
-        var move = moves[i];
-        var newBoard = simulateMoveOnBoard(board, move.fromRow, move.fromCol, move.toRow, move.toCol);
-        var score = evaluateBoard(newBoard);
-        if (score > bestScore) {
-          bestScore = score;
-          bestMoves = [move];
-        } else if (score === bestScore) {
-          bestMoves.push(move);
-        }
-      }
-      var chosenMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
-      movePiece(chosenMove.fromRow, chosenMove.fromCol, chosenMove.toRow, chosenMove.toCol);
-      drawBoard();
-      if (!gameOver && currentTurn === "b") {
-        setTimeout(computerMove, 500);
-      }
-    }
-
-    // ----- 初期描画 -----
+    // --- 初期描画 ---
     drawBoard();
     updateMessage();
   </script>
