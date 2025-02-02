@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>コンピューター対戦チェス（改良版：let/const版）</title>
+  <title>コンピューター対戦チェス（改良版：UI改善済み）</title>
   <style>
     body { 
       background: #eee; 
@@ -88,29 +88,18 @@
         (currentTurn === "w") ? "Turn: Human (White)" : "Turn: Computer (Black)";
     }
 
-    canvas.addEventListener("click", (event) => {
-      if (gameOver || currentTurn !== "w") return;
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const col = Math.floor(x / cellSize);
-      const row = Math.floor(y / cellSize);
-      onCellClick(row, col);
-    });
-
+    // --- UI改善：クリック時の処理 ---
+    // もしクリック先に自分の駒があれば、その駒を新たに選択する
     function onCellClick(row, col) {
       if (gameOver) return;
-      if (!selected) {
-        if (board[row][col] && board[row][col][0] === "w") {
-          selected = { row, col };
-          drawBoard();
-        }
-      } else {
-        if (selected.row === row && selected.col === col) {
-          selected = null;
-          drawBoard();
-          return;
-        }
+      // クリック先が現在の手番の駒なら、常に選択状態にする
+      if (board[row][col] && board[row][col][0] === currentTurn) {
+        selected = { row, col };
+        drawBoard();
+        return;
+      }
+      // クリック先が空マスまたは相手の駒の場合
+      if (selected) {
         if (isLegalMove(selected.row, selected.col, row, col)) {
           movePiece(selected.row, selected.col, row, col);
           selected = null;
@@ -125,6 +114,16 @@
         }
       }
     }
+
+    canvas.addEventListener("click", (event) => {
+      if (gameOver || currentTurn !== "w") return;
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const col = Math.floor(x / cellSize);
+      const row = Math.floor(y / cellSize);
+      onCellClick(row, col);
+    });
 
     // --- 駒移動（キャスリング、パーン昇格、移動済みフラグ更新、手番交代、チェック判定） ---
     function movePiece(fromRow, fromCol, toRow, toCol) {
@@ -183,7 +182,6 @@
     }
 
     // --- 局面評価とコンピューターの手選択 ---
-    // 各駒の価値に基づいて局面の材料評価を計算
     function evaluateBoard(b) {
       let value = 0;
       const pieceValue = { "P": 1, "N": 3, "B": 3, "R": 5, "Q": 9, "K": 1000 };
@@ -199,7 +197,6 @@
       return value;
     }
 
-    // コンピューター側（黒）は、すべての合法手をシミュレーションして1手先の評価が最も良い手を選ぶ
     function computerMove() {
       if (gameOver) return;
       let moves = [];
@@ -387,12 +384,16 @@
         case "P":
           if (color === "w") {
             if (dCol === 0 && dRow === -1 && b[toRow][toCol] === null) return true;
-            if (dCol === 0 && dRow === -2 && fromRow === 6 && b[fromRow - 1][fromCol] === null && b[toRow][toCol] === null) return true;
-            if (Math.abs(dCol) === 1 && dRow === -1 && b[toRow][toCol] && b[toRow][toCol][0] === "b") return true;
+            if (dCol === 0 && dRow === -2 && fromRow === 6 &&
+                b[fromRow - 1][fromCol] === null && b[toRow][toCol] === null) return true;
+            if (Math.abs(dCol) === 1 && dRow === -1 &&
+                b[toRow][toCol] && b[toRow][toCol][0] === "b") return true;
           } else {
             if (dCol === 0 && dRow === 1 && b[toRow][toCol] === null) return true;
-            if (dCol === 0 && dRow === 2 && fromRow === 1 && b[fromRow + 1][fromCol] === null && b[toRow][toCol] === null) return true;
-            if (Math.abs(dCol) === 1 && dRow === 1 && b[toRow][toCol] && b[toRow][toCol][0] === "w") return true;
+            if (dCol === 0 && dRow === 2 && fromRow === 1 &&
+                b[fromRow + 1][fromCol] === null && b[toRow][toCol] === null) return true;
+            if (Math.abs(dCol) === 1 && dRow === 1 &&
+                b[toRow][toCol] && b[toRow][toCol][0] === "w") return true;
           }
           return false;
         case "R":
@@ -437,8 +438,8 @@
       for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
           if (b[i][j] === color + "K") {
-            kingRow = i; 
-            kingCol = j; 
+            kingRow = i;
+            kingCol = j;
             break;
           }
         }
