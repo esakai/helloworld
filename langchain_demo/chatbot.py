@@ -51,7 +51,7 @@ def main():
     
     while True:
         try:
-            user_input = input("ユーザー: ").encode('utf-8').decode('utf-8')
+            user_input = input("ユーザー: ")
             if user_input.lower() in ['quit', 'exit', '終了']:
                 break
             
