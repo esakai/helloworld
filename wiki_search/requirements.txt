@@ -1,2 +1,7 @@
-langchain==0.3.17\nopenai==1.61.1\nwikipedia-api==0.8.1\npython-dotenv==1.0.1
+langchain==0.3.17
+openai==1.61.1
+wikipedia-api==0.8.1
+python-dotenv==1.0.1
 faiss-cpu
+langchain-openai==0.3.4
+tiktoken==0.8.0
