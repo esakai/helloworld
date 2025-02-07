@@ -1,0 +1,2 @@
+langchain==0.3.17\nopenai==1.61.1\nwikipedia-api==0.8.1\npython-dotenv==1.0.1
+faiss-cpu
