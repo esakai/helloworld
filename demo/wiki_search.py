@@ -1,12 +1,12 @@
 import os
 from typing import Optional
 from dotenv import load_dotenv
-from langchain.llms import OpenAI
-from langchain.document_loaders import WikipediaLoader
+from langchain_community.llms import OpenAI
+from langchain_community.document_loaders import WikipediaLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import RetrievalQA
-from langchain.vectorstores import FAISS
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import OpenAIEmbeddings
 
 class WikiSearchError(Exception):
     pass
