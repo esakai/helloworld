@@ -15,12 +15,8 @@ def check_api_key() -> None:
     if not os.getenv("OPENAI_API_KEY"):
         raise WikiSearchError("OpenAI APIキーが設定されていません。.envファイルを確認してください。")
 
-def search_wikipedia(query: str, language: str = "ja", test_mode: bool = False) -> Optional[RetrievalQA]:
+def search_wikipedia(query: str, language: str = "ja") -> RetrievalQA:
     try:
-        if test_mode:
-            print(f"\nテストモード: '{query}'の検索をシミュレートします")
-            return None
-            
         loader = WikipediaLoader(query=query, lang=language)
         documents = loader.load()
         
@@ -48,20 +44,11 @@ def search_wikipedia(query: str, language: str = "ja", test_mode: bool = False) 
 def main() -> None:
     try:
         load_dotenv()
-        test_mode = not os.getenv("OPENAI_API_KEY")
-        
-        if test_mode:
-            print("\n注意: APIキーが設定されていないため、テストモードで実行します。")
-        else:
-            check_api_key()
+        check_api_key()
         
         search_term = input("検索キーワードを入力してください: ")
-        qa_chain = search_wikipedia(search_term, test_mode=test_mode)
+        qa_chain = search_wikipedia(search_term)
         
-        if test_mode:
-            print("\nテストモード: 質問応答をシミュレートします。実際の回答には OpenAI APIキーが必要です。")
-            return
-            
         while True:
             question = input("\n質問を入力してください（終了する場合は'q'を入力）: ")
             if question.lower() == 'q':
