@@ -1,12 +1,11 @@
 import os
 from typing import Optional
 from dotenv import load_dotenv
-from langchain_community.llms import OpenAI
+from langchain_openai import OpenAI, OpenAIEmbeddings
 from langchain_community.document_loaders import WikipediaLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import OpenAIEmbeddings
 
 class WikiSearchError(Exception):
     pass
@@ -46,15 +45,15 @@ def main() -> None:
         load_dotenv()
         check_api_key()
         
-        search_term = input("検索キーワードを入力してください: ")
+        search_term = input("検索キーワードを入力してください: ").encode('utf-8').decode('utf-8')
         qa_chain = search_wikipedia(search_term)
         
         while True:
-            question = input("\n質問を入力してください（終了する場合は'q'を入力）: ")
+            question = input("\n質問を入力してください（終了する場合は'q'を入力）: ").encode('utf-8').decode('utf-8')
             if question.lower() == 'q':
                 break
                 
-            result = qa_chain.run(question)
+            result = qa_chain.invoke(question)
             print(f"\n回答: {result}")
             
     except WikiSearchError as e:
