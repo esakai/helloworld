@@ -230,7 +230,6 @@
                     <input type="checkbox" id="reviewImmediately" style="margin-right: 0.5rem;">
                     すぐに復習する
                 </label>
-                <button id="exportCsvButton" class="secondary-btn" style="margin-left: 1rem;">CSV出力</button>
             </div>
             <button id="startTestButton" class="primary-btn">単語テストを開始</button>
         </div>
@@ -261,6 +260,9 @@
             </form>
         </div>
 
+        <div style="text-align: right; margin-bottom: 1rem;">
+            <button id="exportCsvButton" class="secondary-btn">CSV出力</button>
+        </div>
         <div class="word-list" id="wordList">
             <!-- 単語リストがここに動的に追加されます -->
         </div>
@@ -460,8 +462,6 @@
             }
 
             exportToCsv() {
-                // Create CSV content with BOM for proper Japanese encoding
-                const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
                 const headers = ['単語', '意味'];
                 const csvContent = [
                     headers.join(','),
@@ -471,7 +471,7 @@
                 ].join('\n');
 
                 // Create blob and download
-                const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8' });
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
