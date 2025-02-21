@@ -385,12 +385,10 @@
             now.getDate(),
           );
 
-          // 「すぐ復習する」がチェックされている場合、今日登録された単語を取得
-          const todayWords = this.reviewImmediately
-            ? this.words.filter(
-                (word) => new Date(word.timestamp) >= startOfToday,
-              )
-            : [];
+          // 今日登録された単語を取得
+          const todayWords = this.words.filter(
+            (word) => new Date(word.timestamp) >= startOfToday,
+          );
 
           // 復習日時の昇順でソート（今日の単語は除く）
           const remainingWords = this.words
@@ -400,7 +398,11 @@
             );
 
           // テスト対象単語のうち上位20個を返す
-          return [...todayWords, ...remainingWords].slice(0, 20);
+          return (
+            this.reviewImmediately
+              ? [...todayWords, ...remainingWords]
+              : remainingWords
+          ).slice(0, 20);
         }
 
         showCurrentTestWord() {
