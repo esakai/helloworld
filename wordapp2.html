@@ -310,7 +310,7 @@
 
         loadWords() {
           try {
-            const words = localStorage.getItem("vocabulary");
+            const words = localStorage.getItem("vocabulary2");
             return words ? JSON.parse(words) : [];
           } catch (error) {
             console.error("Error loading words:", error);
@@ -320,7 +320,7 @@
 
         saveWords() {
           try {
-            localStorage.setItem("vocabulary", JSON.stringify(this.words));
+            localStorage.setItem("vocabulary2", JSON.stringify(this.words));
           } catch (error) {
             console.error("Error saving words:", error);
           }
